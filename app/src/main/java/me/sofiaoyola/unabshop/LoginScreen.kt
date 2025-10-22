@@ -1,5 +1,7 @@
 package me.sofiaoyola.unabshop
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,12 +51,23 @@ import androidx.compose.runtime.*
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalView
+
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onClickRegister :()->Unit = {}) {
+fun LoginScreen(onClickRegister :()->Unit = {}, onSuccessfulLogin :()->Unit = {}) {
 
+    //Variable identificación
     val auth = Firebase.auth
+    val activity = LocalView.current.context as Activity
+
+    //ESTADOS
+    var inputEmail by remember{mutableStateOf("")}
+    var inputPassword by remember { mutableStateOf("") }
+    var loginError by remember { mutableStateOf("") }
 
     Scaffold { paddingValues ->
         Column(
@@ -86,8 +99,8 @@ fun LoginScreen(onClickRegister :()->Unit = {}) {
 
             // Campo de Correo Electrónico
             OutlinedTextField(
-                value = "", // Valor vacío (sin estado)
-                onValueChange = {},
+                value = inputEmail,
+                onValueChange = {inputEmail = it}, //Aquí cuando guardemos la del email, quedará guardada en esa variable
                 label = { Text("Correo Electrónico") },
                 leadingIcon = {
                     Icon(
@@ -106,8 +119,8 @@ fun LoginScreen(onClickRegister :()->Unit = {}) {
 
             // Campo de Contraseña
             OutlinedTextField(
-                value = "", // Valor vacío (sin estado)
-                onValueChange = {},
+                value = inputPassword, // Valor password
+                onValueChange = {inputPassword = it}, //Cada que ese valor cambie, vamos a actualizarlo dentro del password
                 label = { Text("Contraseña") },
                 leadingIcon = {
                     Icon(
@@ -126,9 +139,31 @@ fun LoginScreen(onClickRegister :()->Unit = {}) {
                 )
             )
             Spacer(modifier = Modifier.height(24.dp))
+
+            //Para que el texto de error al iniciar sesión aparezca encima y en rojo
+
+            if (loginError.isNotEmpty()){
+                Text(
+                    loginError,
+                    color = Color.Red,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+            }
+
             // Botón de Iniciar Sesión
             Button(
-                onClick = { },
+                onClick = {
+                    auth.signInWithEmailAndPassword(inputEmail, inputPassword)
+                    // Para atrapar la respuesta. Por default va a traer una variable -> task y un parámetro
+                        .addOnCompleteListener(activity) { task ->
+                            //Vamos a comprobar sí la tarea fue exitosa (el valor pasó) o no
+                            if (task.isSuccessful){
+
+                            }else{
+                                loginError = "Error al Iniciar Sesión"
+                            }
+                        }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
