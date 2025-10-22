@@ -46,11 +46,16 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onClickRegister :()->Unit = {}) {
+
+    val auth = Firebase.auth
+
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
