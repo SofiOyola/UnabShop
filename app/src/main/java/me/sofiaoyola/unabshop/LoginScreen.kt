@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.sp
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 
 import androidx.compose.material.icons.filled.*
@@ -54,6 +56,8 @@ import com.google.firebase.auth.auth
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalView
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,8 +76,10 @@ fun LoginScreen(onClickRegister :()->Unit = {}, onSuccessfulLogin :()->Unit = {}
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(paddingValues)
+                .fillMaxSize()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -158,9 +164,13 @@ fun LoginScreen(onClickRegister :()->Unit = {}, onSuccessfulLogin :()->Unit = {}
                         .addOnCompleteListener(activity) { task ->
                             //Vamos a comprobar sí la tarea fue exitosa (el valor pasó) o no
                             if (task.isSuccessful){
-
+                                onSuccessfulLogin()
                             }else{
-                                loginError = "Error al Iniciar Sesión"
+                                loginError = when(task.exception){
+                                    is FirebaseAuthInvalidCredentialsException -> "Correo o contraseña incorrecta"
+                                    is FirebaseAuthInvalidUserException -> "No existe una cuenta con este correo"
+                                    else -> "Error al iniciar sesión. Intenta de nuevo"
+                                }
                             }
                         }
                 },
